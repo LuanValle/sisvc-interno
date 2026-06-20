@@ -1,0 +1,27 @@
+[Unit]
+Description=SisVC - Sistema interno de videoconferencias
+Wants=network-online.target
+Wants=postgresql.service
+After=network-online.target postgresql.service
+
+[Service]
+Type=simple
+User=sisvc
+Group=sisvc
+WorkingDirectory=/opt/sisvc
+Environment=NODE_ENV=production
+EnvironmentFile=/opt/sisvc/.env
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+KillSignal=SIGTERM
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sisvc
+
+[Install]
+WantedBy=multi-user.target

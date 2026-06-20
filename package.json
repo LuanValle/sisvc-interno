@@ -1,0 +1,29 @@
+{
+  "name": "sisvc-interno",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n backend,frontend -c blue,green \"npm run dev --workspace backend\" \"npm run dev --workspace frontend\"",
+    "dev:backend": "npm run dev --workspace backend",
+    "dev:frontend": "npm run dev --workspace frontend",
+    "build": "npm run build --workspace frontend",
+    "start": "npm run start --workspace backend",
+    "check:mojibake": "node scripts/check-mojibake.mjs",
+    "test:smoke": "node scripts/smoke-test.mjs",
+    "test": "npm run check:mojibake && npm run test --workspace backend && npm run build",
+    "db:export": "node backend/scripts/export-database.mjs",
+    "db:import": "node backend/scripts/import-database.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  }
+}
