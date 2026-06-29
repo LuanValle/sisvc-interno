@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import { useCallback, useEffect, useState } from 'react'
 import Dashboard from '../components/Dashboard'
 import { apiFetch } from '../utils/apiClient'
@@ -119,28 +118,6 @@ function AdminDashboard() {
           <strong>{status.today}</strong>
         </article>
       </section>
-      <div className="admin-shortcuts">
-        <Link className="entry-card" to="/admin/solicitacoes">
-          <strong>Solicitações pendentes</strong>
-          <span>Analisar pedidos enviados pelo formulário público.</span>
-        </Link>
-        <Link className="entry-card" to="/admin/agenda">
-          <strong>Agenda aprovada</strong>
-          <span>Ver videoconferencias aprovadas e acompanhar a fila.</span>
-        </Link>
-        <Link className="entry-card" to="/admin/cadastro">
-          <strong>Cadastrar videoconferencia</strong>
-          <span>Registrar uma VC manualmente fora da fila da agenda.</span>
-        </Link>
-        <Link className="entry-card" to="/admin/auditoria">
-          <strong>Auditoria</strong>
-          <span>Gerar relatorios e consultar acoes administrativas.</span>
-        </Link>
-        <Link className="entry-card" to="/admin/todas">
-          <strong>Todas as solicitações</strong>
-          <span>Consultar o histórico completo.</span>
-        </Link>
-      </div>
     </section>
   )
 }

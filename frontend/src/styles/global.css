@@ -1034,6 +1034,40 @@ small {
   gap: 10px;
 }
 
+.agenda-options {
+  position: relative;
+}
+
+.agenda-options-toggle {
+  width: 42px;
+  min-width: 42px;
+  padding: 8px;
+}
+
+.agenda-options-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(250px, calc(100vw - 40px));
+  border: 1px solid #d9e2ee;
+  border-radius: 10px;
+  padding: 10px;
+  background: #ffffff;
+  box-shadow: 0 14px 32px rgba(23, 32, 51, 0.16);
+}
+
+.agenda-options-menu .backup-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.agenda-options-menu .button,
+.agenda-options-menu .file-button {
+  width: 100%;
+  justify-content: flex-start;
+}
+
 .file-button input {
   position: absolute;
   width: 1px;
@@ -1058,11 +1092,23 @@ small {
   padding-left: 0;
 }
 
+.filter-disclosure {
+  margin: 14px 0 20px;
+}
+
+.filter-toggle {
+  min-width: 190px;
+}
+
 .filters {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin: 16px 0 20px;
+  margin: 10px 0 0;
+  border: 1px solid #d9e2ee;
+  border-radius: 10px;
+  padding: 12px;
+  background: #f8fbfd;
 }
 
 .filter-button.active {
@@ -1810,6 +1856,19 @@ dd {
   .file-button,
   .icon-button {
     width: 100%;
+  }
+
+  .agenda-options-toggle {
+    width: 42px;
+  }
+
+  .agenda-options-menu {
+    position: fixed;
+    top: auto;
+    right: 16px;
+    bottom: 16px;
+    left: 16px;
+    width: auto;
   }
 
   .conference-form,
