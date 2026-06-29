@@ -1,5 +1,6 @@
-import { CalendarPlus, SearchCheck, Video } from 'lucide-react'
+import { CalendarPlus, SearchCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import sisvcLogo from '../assets/sisvc-logo.jpg'
 
 function HomePage() {
   return (
@@ -7,11 +8,7 @@ function HomePage() {
       <section className="entry-hero">
         <div className="entry-brand">
           <div className="entry-logo-frame" aria-hidden="true">
-            <div className="entry-logo-mark">
-              <Video size={64} strokeWidth={1.8} />
-              <strong>SisVC</strong>
-              <span>Agendamento de videoconferencias</span>
-            </div>
+            <img src={sisvcLogo} alt="" />
           </div>
         </div>
 
