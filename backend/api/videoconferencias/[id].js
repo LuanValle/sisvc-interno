@@ -3,7 +3,7 @@ import { safeLogAuditAction } from '../_audit.js'
 import { sql } from '../_db.js'
 import { readJsonBody, sendJsonParseError } from '../_request.js'
 import { ensureVideoconferenciaSchema } from '../_schema.js'
-import { isPastDate, isValidUrlOrEmpty, normalizeSector } from '../_validators.js'
+import { isCompletionOnlyPatch, isPastDate, isValidUrlOrEmpty, normalizeSector } from '../_validators.js'
 
 const camposObrigatorios = ['nome', 'plataforma', 'data', 'horario', 'prioridade']
 
@@ -31,6 +31,52 @@ async function atualizarVideoconferencia(request, response) {
 
     const { id } = request.query
     const body = readJsonBody(request)
+
+    const [videoconferenciaAnterior] = await sql`
+        SELECT *
+        FROM videoconferencias
+        WHERE id = ${id}
+        LIMIT 1
+    `
+
+    if (!videoconferenciaAnterior) {
+        return response.status(404).json({
+            error: 'Videoconferencia nao encontrada.',
+        })
+    }
+
+    // A conclusao/reabertura altera somente o status. Assim, uma VC cuja data
+    // ja passou pode ser finalizada sem liberar a edicao dos demais campos.
+    if (isCompletionOnlyPatch(body)) {
+        const [videoconferencia] = await sql`
+            UPDATE videoconferencias
+            SET concluida = ${body.concluida},
+                atualizado_em = CURRENT_TIMESTAMP
+            WHERE id = ${id}
+            RETURNING *
+        `
+
+        const acao = !videoconferenciaAnterior.concluida && body.concluida
+            ? 'concluir_videoconferencia'
+            : videoconferenciaAnterior.concluida && !body.concluida
+                ? 'reabrir_videoconferencia'
+                : 'editar_videoconferencia'
+
+        await safeLogAuditAction({
+            acao,
+            entidade: 'videoconferencia',
+            entidadeId: videoconferencia.id,
+            detalhes: {
+                antes: pickAuditFields(videoconferenciaAnterior),
+                depois: pickAuditFields(videoconferencia),
+            },
+        })
+
+        return response.status(200).json({
+            message: 'Videoconferencia atualizada com sucesso.',
+            data: videoconferencia,
+        })
+    }
 
     if (temCampoObrigatorioVazio(body)) {
         return response.status(400).json({
@@ -71,19 +117,6 @@ async function atualizarVideoconferencia(request, response) {
     if (!isValidUrlOrEmpty(link?.trim())) {
         return response.status(400).json({
             error: 'Informe uma URL valida comecando com http:// ou https://.',
-        })
-    }
-
-    const [videoconferenciaAnterior] = await sql`
-        SELECT *
-        FROM videoconferencias
-        WHERE id = ${id}
-        LIMIT 1
-    `
-
-    if (!videoconferenciaAnterior) {
-        return response.status(404).json({
-            error: 'Videoconferencia nao encontrada.',
         })
     }
 

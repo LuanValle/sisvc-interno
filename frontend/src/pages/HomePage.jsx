@@ -1,4 +1,4 @@
-import { CalendarPlus, Video } from 'lucide-react'
+import { CalendarPlus, SearchCheck, Video } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 function HomePage() {
@@ -19,6 +19,10 @@ function HomePage() {
           <Link className="entry-action-card" to="/solicitar">
             <CalendarPlus size={20} />
             <span>Solicitar videoconferencia</span>
+          </Link>
+          <Link className="entry-action-card entry-action-secondary" to="/acompanhar">
+            <SearchCheck size={20} />
+            <span>Acompanhar videoconferencias</span>
           </Link>
           <Link className="entry-login-link" to="/admin/login">
             Login administrativo

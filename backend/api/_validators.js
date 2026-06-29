@@ -37,3 +37,12 @@ export function isPastDate(value) {
     const date = new Date(`${value}T00:00:00`)
     return Number.isNaN(date.getTime()) || date < today
 }
+
+export function isCompletionOnlyPatch(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+
+    const keys = Object.keys(value)
+    return keys.length === 1
+        && keys[0] === 'concluida'
+        && typeof value.concluida === 'boolean'
+}

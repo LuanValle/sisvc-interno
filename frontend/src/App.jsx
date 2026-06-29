@@ -8,6 +8,7 @@ import AuditPage from './pages/AuditPage'
 import AllRequests from './pages/AllRequests'
 import ApprovedAgenda from './pages/ApprovedAgenda'
 import ConferenceRegistration from './pages/ConferenceRegistration'
+import ConferenceTracking from './pages/ConferenceTracking'
 import HomePage from './pages/HomePage'
 import NotFound from './pages/NotFound'
 import PendingRequests from './pages/PendingRequests'
@@ -28,6 +29,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/solicitar" element={<SolicitationPage />} />
+        <Route path="/acompanhar" element={<ConferenceTracking />} />
         <Route path="/admin/login" element={<AdminLogin />} />
 
         <Route

@@ -6,6 +6,7 @@ import express from 'express'
 
 import adminLogin from './api/admin-login.js'
 import adminLogout from './api/admin-logout.js'
+import acompanhamento from './api/acompanhamento.js'
 import auditoria from './api/auditoria.js'
 import solicitacoes from './api/solicitacoes.js'
 import aprovarSolicitacao from './api/solicitacoes/[id]/aprovar.js'
@@ -51,6 +52,7 @@ const route = (handler, withId = false) => async (request, response, next) => {
 app.get('/api/health', (_request, response) => {
   response.status(200).json({ status: 'ok', service: 'sisvc' })
 })
+app.get('/api/acompanhamento', route(acompanhamento))
 app.get('/api/status', route(status))
 app.post('/api/admin-login', route(adminLogin))
 app.post('/api/admin-logout', route(adminLogout))
