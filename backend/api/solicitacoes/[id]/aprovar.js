@@ -1,7 +1,7 @@
 import { requireAdmin } from '../../_auth.js'
 import { safeLogAuditAction } from '../../_audit.js'
 import { sql } from '../../_db.js'
-import { ensureVideoconferenciaSchema } from '../../_schema.js'
+import { ensureSolicitacaoSchema, ensureVideoconferenciaSchema } from '../../_schema.js'
 
 export default async function handler(request, response) {
     if (request.method !== 'PATCH') {
@@ -15,7 +15,7 @@ export default async function handler(request, response) {
     const { id } = request.query
 
     try {
-        await ensureVideoconferenciaSchema()
+        await Promise.all([ensureSolicitacaoSchema(), ensureVideoconferenciaSchema()])
 
         const [solicitacao] = await sql`
             SELECT *
@@ -49,6 +49,26 @@ export default async function handler(request, response) {
             })
         }
 
+        const [conflitoDeHorario] = solicitacao.horario_fim && solicitacao.local_fisico
+            ? await sql`
+                SELECT horario, horario_fim
+                FROM videoconferencias
+                WHERE concluida = false
+                  AND data <= ${solicitacao.data}::date
+                  AND COALESCE(data_fim, data) >= ${solicitacao.data}::date
+                  AND UPPER(TRIM(local_fisico)) = UPPER(TRIM(${solicitacao.local_fisico}))
+                  AND horario < ${solicitacao.horario_fim}::time
+                  AND COALESCE(horario_fim, horario) > ${solicitacao.horario}::time
+                LIMIT 1
+            `
+            : []
+
+        if (conflitoDeHorario) {
+            return response.status(409).json({
+                error: 'O local ja esta reservado durante esse periodo.',
+            })
+        }
+
         // Evita aprovar uma solicitação que conflita com outra reunião igual.
         const [duplicada] = await sql`
             SELECT id
@@ -79,6 +99,7 @@ export default async function handler(request, response) {
                 local_fisico,
                 data,
                 horario,
+                horario_fim,
                 prioridade,
                 responsavel,
                 setor,
@@ -92,6 +113,7 @@ export default async function handler(request, response) {
                 ${solicitacao.local_fisico || null},
                 ${solicitacao.data},
                 ${solicitacao.horario},
+                ${solicitacao.horario_fim || null},
                 ${solicitacao.prioridade},
                 ${solicitacao.nome},
                 ${solicitacao.setor},
@@ -122,6 +144,7 @@ export default async function handler(request, response) {
                 local_fisico: solicitacao.local_fisico,
                 data: solicitacao.data,
                 horario: solicitacao.horario,
+                horario_fim: solicitacao.horario_fim,
             },
         })
 

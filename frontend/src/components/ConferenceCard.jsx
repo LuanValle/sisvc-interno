@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CalendarDays, CheckCircle2, Clock, Copy, EllipsisVertical, ExternalLink, MapPin, Pencil, RotateCcw, Trash2 } from 'lucide-react'
+import { CalendarDays, CheckCircle2, ChevronDown, Clock, Copy, EllipsisVertical, ExternalLink, MapPin, Pencil, RotateCcw, Trash2 } from 'lucide-react'
 import {
   formatDateRangePtBr,
   getDateStatusText,
@@ -33,6 +33,14 @@ function ConferenceCard({ conference, onEdit, onDelete, onComplete, onReopen }) 
   const [copyStatus, setCopyStatus] = useState('')
   const [sisrecimStatus, setSisrecimStatus] = useState('')
   const [actionsOpen, setActionsOpen] = useState(false)
+  const [detailsOpen, setDetailsOpen] = useState(false)
+
+  const toggleDetails = () => setDetailsOpen((current) => !current)
+
+  const handleCardClick = (event) => {
+    if (event.target.closest('button, a, input, select, textarea, label')) return
+    toggleDetails()
+  }
 
   const handleCopyTicket = async () => {
     setActionsOpen(false)
@@ -63,7 +71,10 @@ function ConferenceCard({ conference, onEdit, onDelete, onComplete, onReopen }) 
   }
 
   return (
-    <article className={`conference-card ${statusClass}`}>
+    <article
+      className={`conference-card ${statusClass}${actionsOpen ? ' actions-menu-open' : ''}${detailsOpen ? ' details-open' : ''}`}
+      onClick={handleCardClick}
+    >
       <div className="card-topline">
         <div>
           <h3>{conference.name}</h3>
@@ -100,6 +111,53 @@ function ConferenceCard({ conference, onEdit, onDelete, onComplete, onReopen }) 
           <dd className="capitalize">{situation}</dd>
         </div>
       </dl>
+
+      <div className="conference-extra-details" aria-hidden={!detailsOpen}>
+        <div className="conference-extra-details-inner">
+          <dl className="conference-extra-details-grid">
+            <div>
+              <dt>Plataforma</dt>
+              <dd>{conference.platform || 'Não informada'}</dd>
+            </div>
+            <div>
+              <dt>Responsável</dt>
+              <dd>{conference.responsible || 'Não informado'}</dd>
+            </div>
+            <div>
+              <dt>Setor</dt>
+              <dd>{conference.department || 'Não informado'}</dd>
+            </div>
+            <div>
+              <dt>Prioridade</dt>
+              <dd>{conference.priority || 'Não informada'}</dd>
+            </div>
+            <div>
+              <dt>Horário final</dt>
+              <dd>{conference.endTime || 'Não informado'}</dd>
+            </div>
+            <div>
+              <dt>Recorrência</dt>
+              <dd>{conference.recurrenceType && conference.recurrenceType !== 'none' ? conference.recurrenceType : 'Não'}</dd>
+            </div>
+          </dl>
+          {conference.notes && (
+            <div className="conference-extra-notes">
+              <strong>Observações</strong>
+              <p>{conference.notes}</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <button
+        className="conference-details-toggle no-print"
+        type="button"
+        aria-expanded={detailsOpen}
+        onClick={toggleDetails}
+      >
+        {detailsOpen ? 'Ocultar detalhes' : 'Ver detalhes'}
+        <ChevronDown size={16} aria-hidden="true" />
+      </button>
 
       {onEdit && onDelete && onComplete && onReopen && (
         <div className="card-actions-wrapper no-print">

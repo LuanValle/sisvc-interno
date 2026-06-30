@@ -50,6 +50,11 @@ export async function ensureSolicitacaoSchema() {
         ADD COLUMN IF NOT EXISTS local_fisico TEXT
     `
 
+    await sql`
+        ALTER TABLE solicitacoes
+        ADD COLUMN IF NOT EXISTS horario_fim TIME
+    `
+
     solicitacaoSchemaReady = true
 }
 
@@ -59,6 +64,11 @@ export async function ensureVideoconferenciaSchema() {
     await sql`
         ALTER TABLE videoconferencias
         ADD COLUMN IF NOT EXISTS local_fisico TEXT
+    `
+
+    await sql`
+        ALTER TABLE videoconferencias
+        ADD COLUMN IF NOT EXISTS horario_fim TIME
     `
 
     await sql`

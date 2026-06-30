@@ -2,6 +2,7 @@ import { ArrowLeft, Send } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import ErrorMessage from '../components/ErrorMessage'
+import AvailabilityDatePicker from '../components/AvailabilityDatePicker'
 import { apiFetch } from '../utils/apiClient'
 import { formatContact, formatNip, normalizeSector, onlyDigits } from '../utils/formatters'
 import { notifyRequestsChanged } from '../utils/realtimeEvents'
@@ -18,6 +19,7 @@ const initialForm = {
   physicalLocation: '',
   date: '',
   time: '',
+  endTime: '',
   priority: '',
   link: '',
   requestLink: false,
@@ -31,8 +33,10 @@ const requiredFields = [
   'contact',
   'conferenceName',
   'platform',
+  'physicalLocation',
   'date',
   'time',
+  'endTime',
   'priority',
 ]
 
@@ -43,6 +47,15 @@ const isPastDate = (value) => {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   return new Date(`${value}T00:00:00`) < today
+}
+
+const todayIso = () => {
+  const today = new Date()
+  return [
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, '0'),
+    String(today.getDate()).padStart(2, '0'),
+  ].join('-')
 }
 
 const mapFormToApiPayload = (form) => ({
@@ -56,6 +69,7 @@ const mapFormToApiPayload = (form) => ({
   local_fisico: form.physicalLocation.trim(),
   data: form.date.trim(),
   horario: form.time.trim(),
+  horario_fim: form.endTime.trim(),
   prioridade: form.priority.trim(),
   link: form.link.trim(),
   solicitar_link: Boolean(form.requestLink && !form.link.trim()),
@@ -103,6 +117,12 @@ function SolicitationPage() {
     if (isPastDate(form.date)) {
       setSuccess('')
       setError('A data não pode ser anterior à data atual.')
+      return
+    }
+
+    if (form.endTime <= form.time) {
+      setSuccess('')
+      setError('O horario final deve ser posterior ao horario inicial.')
       return
     }
 
@@ -224,20 +244,28 @@ function SolicitationPage() {
               </select>
             </label>
             <label className="form-field">
-              Local da videoconferencia
+              Local da videoconferencia *
               <input
                 value={form.physicalLocation}
                 onChange={(event) => updateUppercaseField('physicalLocation', event.target.value)}
                 placeholder="Ex.: AUDITORIO CGS"
               />
             </label>
+            <div className="form-field">
+              <span className="form-field-label">Data *</span>
+              <AvailabilityDatePicker
+                value={form.date}
+                min={todayIso()}
+                onChange={(date) => updateField('date', date)}
+              />
+            </div>
             <label className="form-field">
-              Data *
-              <input type="date" value={form.date} onChange={(event) => updateField('date', event.target.value)} />
+              Horário inicial *
+              <input type="time" value={form.time} onChange={(event) => updateField('time', event.target.value)} />
             </label>
             <label className="form-field">
-              Horário *
-              <input type="time" value={form.time} onChange={(event) => updateField('time', event.target.value)} />
+              Horário final *
+              <input type="time" value={form.endTime} onChange={(event) => updateField('endTime', event.target.value)} />
             </label>
             <label className="form-field">
               Prioridade *
