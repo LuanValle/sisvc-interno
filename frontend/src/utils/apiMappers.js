@@ -31,6 +31,7 @@ export const apiToConference = (item) => ({
   date: item.data?.slice(0, 10) || '',
   endDate: item.data_fim?.slice(0, 10) || '',
   time: item.horario?.slice(0, 5) || '',
+  endTime: item.horario_fim?.slice(0, 5) || '',
   priority: item.prioridade,
   responsible: item.responsavel || '',
   department: item.setor || '',

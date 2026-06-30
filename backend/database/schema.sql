@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS solicitacoes (
     local_fisico TEXT,
     data DATE NOT NULL,
     horario TIME NOT NULL,
+    horario_fim TIME,
     prioridade TEXT NOT NULL,
     link TEXT,
     solicitar_link BOOLEAN NOT NULL DEFAULT false,
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS videoconferencias (
     local_fisico TEXT,
     data DATE NOT NULL,
     horario TIME NOT NULL,
+    horario_fim TIME,
     data_fim DATE,
     prioridade TEXT NOT NULL,
     responsavel TEXT,
@@ -54,7 +56,9 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 ALTER TABLE solicitacoes ADD COLUMN IF NOT EXISTS email_responsavel TEXT;
 ALTER TABLE solicitacoes ADD COLUMN IF NOT EXISTS solicitar_link BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE solicitacoes ADD COLUMN IF NOT EXISTS local_fisico TEXT;
+ALTER TABLE solicitacoes ADD COLUMN IF NOT EXISTS horario_fim TIME;
 ALTER TABLE videoconferencias ADD COLUMN IF NOT EXISTS local_fisico TEXT;
+ALTER TABLE videoconferencias ADD COLUMN IF NOT EXISTS horario_fim TIME;
 ALTER TABLE videoconferencias ADD COLUMN IF NOT EXISTS data_fim DATE;
 ALTER TABLE videoconferencias ADD COLUMN IF NOT EXISTS recurrence_group_id TEXT;
 ALTER TABLE videoconferencias ADD COLUMN IF NOT EXISTS recurrence_type TEXT;
