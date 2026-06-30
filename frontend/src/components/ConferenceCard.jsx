@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CalendarDays, CheckCircle2, Clock, Copy, ExternalLink, Pencil, RotateCcw, Trash2 } from 'lucide-react'
+import { CalendarDays, CheckCircle2, Clock, Copy, EllipsisVertical, ExternalLink, MapPin, Pencil, RotateCcw, Trash2 } from 'lucide-react'
 import {
   formatDateRangePtBr,
   getDateStatusText,
@@ -32,8 +32,10 @@ function ConferenceCard({ conference, onEdit, onDelete, onComplete, onReopen }) 
   const situation = getSituation(conference)
   const [copyStatus, setCopyStatus] = useState('')
   const [sisrecimStatus, setSisrecimStatus] = useState('')
+  const [actionsOpen, setActionsOpen] = useState(false)
 
   const handleCopyTicket = async () => {
+    setActionsOpen(false)
     try {
       await copyToClipboard(buildCallTicketText(conference))
       setCopyStatus('copied')
@@ -45,6 +47,7 @@ function ConferenceCard({ conference, onEdit, onDelete, onComplete, onReopen }) 
   }
 
   const handleOpenSisrecimTicket = () => {
+    setActionsOpen(false)
     const copyPromise = copyToClipboard(buildCallTicketText(conference))
     window.open(SISRECIM_TICKET_URL, '_blank', 'noopener,noreferrer')
 
@@ -64,17 +67,13 @@ function ConferenceCard({ conference, onEdit, onDelete, onComplete, onReopen }) 
       <div className="card-topline">
         <div>
           <h3>{conference.name}</h3>
-          <p>{conference.platform}</p>
         </div>
         <div className="badge-group">
-          <span className={`priority-badge priority-${conference.priority.toLowerCase()}`}>
-            {conference.priority}
-          </span>
           <span className={`situation-badge situation-${situation}`}>{getDateStatusText(conference)}</span>
         </div>
       </div>
 
-      <dl className="conference-details">
+      <dl className="conference-details conference-details-compact">
         <div>
           <dt>
             <CalendarDays size={15} />
@@ -89,78 +88,73 @@ function ConferenceCard({ conference, onEdit, onDelete, onComplete, onReopen }) 
           </dt>
           <dd>{conference.time}</dd>
         </div>
-        {conference.responsible && (
-          <div>
-            <dt>Responsável</dt>
-            <dd>{conference.responsible}</dd>
-          </div>
-        )}
-        {conference.department && (
-          <div>
-            <dt>Setor</dt>
-            <dd>{conference.department}</dd>
-          </div>
-        )}
-        {conference.physicalLocation && (
-          <div>
-            <dt>Local</dt>
-            <dd>{conference.physicalLocation}</dd>
-          </div>
-        )}
+        <div>
+          <dt>
+            <MapPin size={15} />
+            Local
+          </dt>
+          <dd>{conference.physicalLocation || 'Não informado'}</dd>
+        </div>
         <div>
           <dt>Situação</dt>
           <dd className="capitalize">{situation}</dd>
         </div>
       </dl>
 
-      {conference.link && (
-        <a className="meeting-link" href={conference.link} target="_blank" rel="noopener noreferrer">
-          <ExternalLink size={16} />
-          Abrir reunião
-        </a>
-      )}
-
-      {conference.notes && <p className="notes">{conference.notes}</p>}
-
       {onEdit && onDelete && onComplete && onReopen && (
-        <div className="card-actions no-print">
-          <button className="icon-button" type="button" onClick={() => onEdit(conference)} title="Editar">
-            <Pencil size={17} />
-            <span>Editar</span>
-          </button>
+        <div className="card-actions-wrapper no-print">
           <button
-            className={copyStatus === 'copied' ? 'icon-button copied' : 'icon-button'}
+            className="icon-button card-actions-toggle"
             type="button"
-            onClick={handleCopyTicket}
-            title="Copiar modelo de chamado"
+            aria-label={`Ações de ${conference.name}`}
+            aria-expanded={actionsOpen}
+            title="Mais ações"
+            onClick={() => setActionsOpen((current) => !current)}
           >
-            <Copy size={17} />
-            <span>{copyStatus === 'copied' ? 'Copiado' : copyStatus === 'error' ? 'Erro ao copiar' : 'Copiar chamado'}</span>
+            <EllipsisVertical size={19} />
           </button>
-          <button
-            className={sisrecimStatus === 'copied' ? 'icon-button copied' : 'icon-button'}
-            type="button"
-            onClick={handleOpenSisrecimTicket}
-            title="Copiar modelo e abrir chamado no SisRecim"
-          >
-            <ExternalLink size={17} />
-            <span>{sisrecimStatus === 'copied' ? 'Copiado' : sisrecimStatus === 'error' ? 'Erro ao copiar' : 'Abrir SisRecim'}</span>
-          </button>
-          {conference.completed ? (
-            <button className="icon-button" type="button" onClick={() => onReopen(conference.id)} title="Reabrir">
-              <RotateCcw size={17} />
-              <span>Reabrir</span>
-            </button>
-          ) : (
-            <button className="icon-button success" type="button" onClick={() => onComplete(conference.id)} title="Concluir">
-              <CheckCircle2 size={17} />
-              <span>Concluir</span>
-            </button>
+          {actionsOpen && (
+            <div className="card-actions-menu">
+              {conference.link && (
+                <a className="card-action-item" href={conference.link} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink size={16} />
+                  Abrir reunião
+                </a>
+              )}
+              <button type="button" onClick={() => { setActionsOpen(false); onEdit(conference) }}>
+                <Pencil size={16} />
+                Editar
+              </button>
+              <button type="button" onClick={handleCopyTicket}>
+                <Copy size={16} />
+                Copiar chamado
+              </button>
+              <button type="button" onClick={handleOpenSisrecimTicket}>
+                <ExternalLink size={16} />
+                Abrir SisRecim
+              </button>
+              {conference.completed ? (
+                <button type="button" onClick={() => { setActionsOpen(false); onReopen(conference.id) }}>
+                  <RotateCcw size={16} />
+                  Reabrir
+                </button>
+              ) : (
+                <button className="success" type="button" onClick={() => { setActionsOpen(false); onComplete(conference.id) }}>
+                  <CheckCircle2 size={16} />
+                  Concluir
+                </button>
+              )}
+              <button className="danger" type="button" onClick={() => { setActionsOpen(false); onDelete(conference.id) }}>
+                <Trash2 size={16} />
+                Excluir
+              </button>
+            </div>
           )}
-          <button className="icon-button danger" type="button" onClick={() => onDelete(conference.id)} title="Excluir">
-            <Trash2 size={17} />
-            <span>Excluir</span>
-          </button>
+          {(copyStatus || sisrecimStatus) && (
+            <span className="card-action-feedback" role="status">
+              {copyStatus === 'copied' || sisrecimStatus === 'copied' ? 'Copiado' : 'Erro ao copiar'}
+            </span>
+          )}
         </div>
       )}
     </article>

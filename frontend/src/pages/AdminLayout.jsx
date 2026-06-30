@@ -1,4 +1,4 @@
-import { CalendarDays, FileText, Inbox, LayoutDashboard, List, LogOut, Menu, PanelLeftClose, PlusCircle, XCircle } from 'lucide-react'
+import { CalendarDays, FileText, Inbox, LayoutDashboard, List, LogOut, PanelLeftClose, PanelLeftOpen, PlusCircle, XCircle } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import ConfirmModal from '../components/ConfirmModal'
@@ -20,7 +20,8 @@ const priorityClassByName = {
 
 function AdminLayout() {
   const navigate = useNavigate()
-  const [isSidebarHidden, setIsSidebarHidden] = useState(() => localStorage.getItem('adminSidebarHidden') === 'true')
+  const [isSidebarPinned, setIsSidebarPinned] = useState(false)
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false)
   const [pendingRequests, setPendingRequests] = useState([])
   const [actionLoadingId, setActionLoadingId] = useState(null)
   const [confirmingRequest, setConfirmingRequest] = useState(null)
@@ -46,10 +47,6 @@ function AdminLayout() {
     const refreshPendingRequests = () => fetchPendingRequests()
     return subscribeRealtimeEvent(REQUESTS_CHANGED_EVENT, refreshPendingRequests)
   }, [fetchPendingRequests])
-
-  useEffect(() => {
-    localStorage.setItem('adminSidebarHidden', String(isSidebarHidden))
-  }, [isSidebarHidden])
 
   const handleLogout = async () => {
     // Limpa a sessão visual e também pede para a API remover o cookie administrativo.
@@ -104,86 +101,72 @@ function AdminLayout() {
   const firstPendingRequest = pendingRequests[0]
   const notificationPriorityClass =
     priorityClassByName[firstPendingRequest?.priority] || 'medium'
+  const isSidebarExpanded = isSidebarPinned || isSidebarHovered
 
   return (
-    <div className={isSidebarHidden ? 'admin-shell sidebar-hidden' : 'admin-shell'}>
-      {!isSidebarHidden && (
-        <aside className="admin-sidebar">
+    <div className={isSidebarExpanded ? 'admin-shell sidebar-expanded' : 'admin-shell sidebar-collapsed'}>
+      <aside
+        className="admin-sidebar"
+        onMouseEnter={() => setIsSidebarHovered(true)}
+        onMouseLeave={() => setIsSidebarHovered(false)}
+      >
         <div className="admin-sidebar-header">
-          <div>
+          <div className="admin-sidebar-brand">
             <p className="eyebrow">Administração</p>
             <h1>Videoconferências</h1>
           </div>
           <button
             className="sidebar-toggle-button"
             type="button"
-            onClick={() => setIsSidebarHidden(true)}
-            aria-label="Esconder menu lateral"
-            aria-expanded="true"
-            title="Esconder menu"
+            onClick={() => setIsSidebarPinned((current) => !current)}
+            aria-label={isSidebarPinned ? 'Recolher menu lateral' : 'Fixar menu lateral aberto'}
+            aria-expanded={isSidebarExpanded}
+            title={isSidebarPinned ? 'Recolher menu' : 'Fixar menu aberto'}
           >
-            <PanelLeftClose size={18} />
+            {isSidebarPinned ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
           </button>
         </div>
         <nav className="admin-nav" aria-label="Navegação administrativa">
-          <NavLink to="/admin" end>
+          <NavLink to="/admin" end aria-label="Painel">
             <LayoutDashboard size={18} />
-            Painel
+            <span className="nav-label">Painel</span>
           </NavLink>
-          <NavLink to="/admin/solicitacoes">
+          <NavLink to="/admin/solicitacoes" aria-label="Pendentes">
             <Inbox size={18} />
-            <span>Pendentes</span>
+            <span className="nav-label">Pendentes</span>
             {pendingRequests.length > 0 && (
               <span className="pending-badge" aria-label={`${pendingRequests.length} solicitações pendentes`}>
                 {pendingRequests.length}
               </span>
             )}
           </NavLink>
-          <NavLink to="/admin/agenda">
+          <NavLink to="/admin/agenda" aria-label="Agenda">
             <CalendarDays size={18} />
-            Agenda
+            <span className="nav-label">Agenda</span>
           </NavLink>
-          <NavLink to="/admin/cadastro">
+          <NavLink to="/admin/cadastro" aria-label="Cadastro">
             <PlusCircle size={18} />
-            Cadastro
+            <span className="nav-label">Cadastro</span>
           </NavLink>
-          <NavLink to="/admin/auditoria">
+          <NavLink to="/admin/auditoria" aria-label="Auditoria">
             <FileText size={18} />
-            Auditoria
+            <span className="nav-label">Auditoria</span>
           </NavLink>
-          <NavLink to="/admin/rejeitadas">
+          <NavLink to="/admin/rejeitadas" aria-label="Rejeitadas">
             <XCircle size={18} />
-            Rejeitadas
+            <span className="nav-label">Rejeitadas</span>
           </NavLink>
-          <NavLink to="/admin/todas">
+          <NavLink to="/admin/todas" aria-label="Todas">
             <List size={18} />
-            Todas
+            <span className="nav-label">Todas</span>
           </NavLink>
         </nav>
-        <button className="button secondary" type="button" onClick={handleLogout}>
+        <button className="button secondary admin-logout" type="button" onClick={handleLogout} aria-label="Sair">
           <LogOut size={17} />
-          Sair
+          <span className="nav-label">Sair</span>
         </button>
-        </aside>
-      )}
+      </aside>
       <main className="admin-content">
-        {isSidebarHidden && (
-          <button
-            className="sidebar-restore-button no-print"
-            type="button"
-            onClick={() => setIsSidebarHidden(false)}
-            aria-expanded="false"
-          >
-            <Menu size={18} />
-            Mostrar menu
-            {pendingRequests.length > 0 && (
-              <span className="pending-badge" aria-label={`${pendingRequests.length} solicitações pendentes`}>
-                {pendingRequests.length}
-              </span>
-            )}
-          </button>
-        )}
-
         <Outlet />
 
         {firstPendingRequest && (

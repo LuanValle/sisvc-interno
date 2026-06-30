@@ -1,0 +1,52 @@
+/* Mantem a barra lateral minimalista em notebooks e tablets horizontais. */
+@media (min-width: 721px) and (max-width: 1040px) {
+  .admin-shell,
+  .admin-shell.sidebar-collapsed {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .admin-shell.sidebar-expanded {
+    grid-template-columns: 240px minmax(0, 1fr);
+  }
+
+  .admin-sidebar {
+    position: sticky;
+    height: 100vh;
+    padding: 16px 10px;
+    overflow: hidden;
+  }
+
+  .sidebar-collapsed .admin-sidebar-brand,
+  .sidebar-collapsed .nav-label {
+    display: none;
+  }
+
+  .sidebar-collapsed .admin-sidebar-header,
+  .sidebar-collapsed .admin-nav a,
+  .sidebar-collapsed .admin-logout {
+    justify-content: center;
+  }
+
+  .sidebar-collapsed .pending-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 16px;
+    height: 16px;
+    margin: 0;
+    padding: 0 4px;
+    font-size: 0.65rem;
+  }
+
+  .sidebar-toggle-button {
+    display: inline-flex;
+  }
+
+  .admin-nav {
+    grid-template-columns: 1fr;
+  }
+
+  .conference-details-compact {
+    grid-template-columns: repeat(4, minmax(100px, 1fr));
+  }
+}
