@@ -6,15 +6,16 @@
 Separar a lógica de solicitações/aprovações do SISVC do executor de navegador no Ubuntu, sem exigir acesso direto do robô ao banco.
 
 ## Componentes e fronteiras
-1. **Frontend SISVC:** criar solicitação, aprovar/rejeitar, observar estado da automação e consultar link.
-2. **Backend Express:** autenticação, regras de negócio, fila persistente, autorização das tarefas, auditoria e atualização dos resultados.
-3. **PostgreSQL:** fonte de verdade para solicitações, reuniões e tarefas. Verificar correspondência com a implantação real.
-4. **Worker Ubuntu (Node.js):** inicia chamadas HTTPS autenticadas para retirar tarefas e informar status; não recebe conexões externas e não acessa diretamente o banco.
-5. **Adaptador Webex (Playwright):** navegador isolado, sessão institucional validada, criação de reunião e captura do link.
-6. **Indicador local opcional:** mostra estado do robô sem assumir o foco do painel operacional.
+1. **Frontend SISVC:** criar solicitação, consultar status de aprovação, observar estado da automação e consultar link. Uma aprovação manual alternativa pelo site não está definida nesta investigação.
+2. **Bot Telegram + integração:** notificar operadores vinculados e apresentar ações Aprovar/Recusar; o backend consulta as respostas pela API do bot usando conexão de saída, sem receber tráfego público de entrada.
+3. **Backend Express:** validar identidade do operador e permissões, registrar a decisão do Telegram, aplicar regras de negócio, controlar fila persistente e auditoria. A recusa nunca cria tarefa Webex.
+4. **PostgreSQL:** fonte de verdade para solicitações, decisões de operadores, reuniões e tarefas. Verificar correspondência com a implantação real.
+5. **Worker Ubuntu (Node.js):** inicia chamadas HTTPS autenticadas para retirar tarefas e informar status; não recebe conexões externas e não acessa diretamente o banco.
+6. **Adaptador Webex (Playwright):** navegador isolado, sessão institucional validada, criação de reunião e captura do link.
+7. **Indicador local opcional:** mostra estado do robô sem assumir o foco do painel operacional.
 
 ## Fluxo nominal
-Solicitação → aprovação SISVC → tarefa PENDENTE → worker assume → AGENDANDO → Webex cria reunião → captura link e confirmação de convidados → SISVC atualiza reunião e tarefa CONCLUIDA → interface informa resultado.
+Solicitação SISVC → bot Telegram notifica operador autorizado → operador escolhe Aprovar ou Recusar (único gate humano) → backend valida a conta Telegram vinculada, permissões, estado e elegibilidade → **se Recusar**, persiste recusa e encerra sem agendamento; **se Aprovar**, registra aprovação no SISVC e tarefa PENDENTE de forma consistente → worker Ubuntu assume → Webex agenda → captura link e convidados → backend grava resultado → SISVC informa situação. Nenhuma segunda aprovação humana de rotina.
 
 ## Estados sugeridos para a tarefa
 - PENDENTE: aguardando worker.
@@ -28,6 +29,9 @@ Solicitação → aprovação SISVC → tarefa PENDENTE → worker assume → AG
 **Separação obrigatória proposta:** a aprovação do chamado e o estado do agendamento Webex são conceitos distintos.
 
 ## Propriedades arquiteturais a validar
+- Apenas a ação **Aprovar** válida recebida via Telegram pode enfileirar automação; **Recusar** não enfileira.
+- Vincular identificador da conta Telegram ao operador previamente autorizado no SISVC; telefone isolado não constitui autorização.
+- Ignorar ações repetidas ou antigas, prevenir replay e rejeitar operadores não autorizados; persistir uma única decisão efetiva para a solicitação.
 - Guardar uma tarefa por solicitação elegível; reserva atômica para impedir dois workers simultâneos.
 - Confirmar se a reunião existe antes de qualquer retry após timeout da interface; prevenir duplicidade no Webex.
 - Worker desconectado não implica perda de tarefa; computador pode ficar desligado fora do expediente.
@@ -42,6 +46,7 @@ Solicitação → aprovação SISVC → tarefa PENDENTE → worker assume → AG
 - **Automação desktop com foco na janela:** incompatível com a exigência de não atrapalhar o computador compartilhado; evitar como padrão.
 
 ## Organização do código quando aprovado
+- backend/telegram/: bot, polling, verificação dos operadores e tratamento de decisões.
 - backend/automation/: orquestração da fila e contratos internos.
 - worker-webex/: processo isolado, cliente da API e adaptador Playwright.
 - frontend/: visualização de estado e operações de supervisão.
