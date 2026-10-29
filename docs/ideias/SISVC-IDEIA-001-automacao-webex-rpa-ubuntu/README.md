@@ -11,6 +11,7 @@ Esta pasta agrupa os documentos da ideia. O código de produção, quando aprova
 - [ARQUITETURA.md](./ARQUITETURA.md): componentes, fronteiras, responsabilidades e fluxo.
 - [ESPECIFICACAO.md](./ESPECIFICACAO.md): o que deve fazer, o que não pode fazer e critérios de aceite.
 - [PLANO-TDD.md](./PLANO-TDD.md): SDD, ciclos RED/GREEN/REFACTOR, testes e gates.
+- [agentes/](./agentes/README.md): perfis e regras de supervisão da equipe de IAs (ORQUESTRADOR, DESENVOLVEDOR e REVISOR).
 
 ## Decisão registrada: 2026-10-29
 
