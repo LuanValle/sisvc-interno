@@ -1,40 +1,46 @@
-# Agentes da SISVC-IDEIA-001
+# Equipe de agentes — SISVC-IDEIA-001
 
-**Status:** arquitetura de agentes em planejamento; papéis documentais, **não executados**.
+**Estado:** perfis e protocolo documentados em 2026-10-29. **Nenhum agente foi ativado ou executou código**.
 
-## Equipe enxuta proposta
+## Equipe enxuta de três papéis
 
-| Papel | Função | Estado |
+| Perfil | Responsabilidade | Autoridade |
 | --- | --- | --- |
-| **[ORQUESTRADOR](./ORQUESTRADOR.md)** | Supervisiona outros agentes, distribui tarefas, decide aprovações internas baseadas em evidências e prepara entrega para o gate final. Não implementa nem executa deploy. | Perfil inicial registrado |
-| **DESENVOLVEDOR** | Implementa pequenas tarefas aprovadas com TDD (RED/GREEN/REFACTOR), executa testes e entrega provas. | Perfil a detalhar |
-| **REVISOR** | Avalia especificações, segurança, código, testes e regressões sem revisar o próprio trabalho. | Perfil a detalhar |
+| [**ORQUESTRADOR**](./ORQUESTRADOR.md) | Supervisiona a equipe, delega tarefas, verifica evidências, aprova etapas internas e prepara release | Não implementa nem publica |
+| [**DESENVOLVEDOR**](./DESENVOLVEDOR.md) | Identifica e implementa tarefas aprovadas com RED → GREEN → REFACTOR, testa e entrega evidências | Escreve só dentro da Work Order |
+| [**REVISOR**](./REVISOR.md) | Revisão independente; aprova input corretivo **local** ou escala mudança de escopo | Não corrige código nem publica |
 
-## Separação de decisões
+## Como trabalhar
 
-- **Desenvolvimento:** o ORQUESTRADOR autoriza internamente as etapas depois de revisão independente; o proprietário só decide o deploy final.
-- **Operação SISVC:** um operador **humano** autoriza ou recusa chamados pelo Telegram; uma aprovação válida dispara a tarefa Webex, sem segundo gate humano. Não confundir esse operador com o ORQUESTRADOR de desenvolvimento.
-- Sem aprovação de deploy pelo proprietário, não publicar a automação em produção.
-
-## Fluxo de trabalho proposto
+Leia [PROTOCOLO.md](./PROTOCOLO.md) para o fluxo, Work Orders, revisão, correções e gate final. Para transferir a execução ao Maestri/Codex ou outro ambiente de agentes, comece por [INICIAR-EQUIPE.md](./INICIAR-EQUIPE.md), que contém a instrução de inicialização do ORQUESTRADOR.
 
 ```text
-Investigação e especificação (SDD)
-            |
-      ORQUESTRADOR
-            |
-        DESENVOLVEDOR
-    testes RED -> GREEN -> REFACTOR
-            |
-       REVISOR independente
-            |
-      ORQUESTRADOR
-     /            \
-CORRIGIR       PREPARAR RELEASE
-                   |
-         PROPRIETÁRIO: GATE DEPLOY
+ORQUESTRADOR ── especifica/delega ──> DESENVOLVEDOR
+                                          |
+                                    TDD + evidências
+                                          |
+                                          v
+                                    REVISOR independente
+                                    /                \
+                      input local corretivo         revisão aprovada
+                                 |                        |
+                         reIDENTIFICAR + TDD              v
+                                 |                 ORQUESTRADOR
+                                 +<-- REVISOR       aprova etapa
+                                                         |
+                                                    release candidata
+                                                         |
+                                                  HUMANO: gate deploy
 ```
 
-Regras de referência: `../INVESTIGACAO.md`, `../ESPECIFICACAO.md`, `../ARQUITETURA.md` e `../PLANO-TDD.md`. O JARVIS serve de referência para SDD e divisão de responsabilidades, sem importar automaticamente suas decisões específicas de produto.
+**Problema imprevisto:** DESENVOLVEDOR para alterações fora do escopo e consulta REVISOR. REVISOR pode aprovar o novo input local e devolver à **IDENTIFICAÇÃO** do DESENVOLVEDOR. Se mudar escopo/arquitetura/segurança, escala ao ORQUESTRADOR. Correções são limitadas e registradas.
 
-**Próximo passo de projeto:** aprofundar o perfil do DESENVOLVEDOR e do REVISOR, especificar formato das tarefas e definir o orçamento/ciclos máximos de automação.
+## Governança
+
+- **Autonomia interna:** proprietário não participa de microaprovações de desenvolvimento; ORQUESTRADOR assume coordenação com revisão independente.
+- **Último gate humano:** somente o proprietário autoriza ou recusa deploy final; ausência de testes reais ou bloqueios não podem ser omitidos.
+- **Operação do SISVC:** o **operador humano no Telegram**, e não qualquer agente de desenvolvimento, decide Aprovar/Recusar um chamado Webex. Aprovação valida e enfileira a tarefa; recusa não agenda.
+- **Limites:** nenhum agente controla Webex institucional ou produção por ser descrito aqui. A configuração, permissões, testes de ambiente e integração com ferramentas continuam pendentes.
+- **Fontes de verdade:** [investigação](../INVESTIGACAO.md), [especificação](../ESPECIFICACAO.md), [arquitetura](../ARQUITETURA.md) e [TDD](../PLANO-TDD.md), sempre distinguindo decisões confirmadas de hipóteses.
+
+**Próximo passo:** usar INICIAR-EQUIPE.md para configurar a orquestração e concluir pendências de especificação antes da implementação.
